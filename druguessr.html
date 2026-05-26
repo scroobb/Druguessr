@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Druguessr 💊</title>
+<style>
+  :root {
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #6b7280;
+    --color-text-tertiary: #9ca3af;
+    --color-text-danger: #dc2626;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f3f4f6;
+    --color-background-tertiary: #787c7e;
+    --color-border-secondary: #d1d5db;
+    --color-border-tertiary: #e5e7eb;
+    --color-border-primary: #6b7280;
+    --border-radius-md: 6px;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-text-primary: #f9fafb;
+      --color-text-secondary: #9ca3af;
+      --color-text-tertiary: #6b7280;
+      --color-text-danger: #f87171;
+      --color-background-primary: #111827;
+      --color-background-secondary: #1f2937;
+      --color-background-tertiary: #374151;
+      --color-border-secondary: #374151;
+      --color-border-tertiary: #1f2937;
+      --color-border-primary: #9ca3af;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: var(--color-background-primary); color: var(--color-text-primary); }
+  #app { max-width: 600px; margin: 0 auto; padding: 1rem 0.5rem 2rem; }
+  h1 { font-size: 22px; font-weight: 500; text-align: center; letter-spacing: 3px; color: var(--color-text-primary); margin-bottom: 2px; }
+  .subtitle { text-align: center; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 1rem; }
+  #hint-bar { text-align: center; font-size: 13px; color: var(--color-text-secondary); min-height: 20px; margin-bottom: 0.5rem; }
+  #class-hint { text-align: center; font-size: 13px; color: var(--color-text-primary); min-height: 20px; margin-bottom: 0.5rem; font-weight: 500; display: none; }
+  #grid { display: flex; flex-direction: column; gap: 3px; margin-bottom: 1rem; align-items: center; }
+  .row { display: flex; gap: 3px; }
+  .cell { width: 38px; height: 36px; border: 0.5px solid var(--color-border-secondary); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--color-text-primary); background: var(--color-background-primary); text-transform: uppercase; flex-shrink: 0; }
+  .cell.correct { background: #538d4e; border-color: #538d4e; color: #fff; }
+  .cell.present { background: #b59f3b; border-color: #b59f3b; color: #fff; }
+  .cell.absent { background: var(--color-background-tertiary); border-color: var(--color-background-tertiary); color: #fff; }
+  .cell.skip { background: var(--color-background-secondary); border-color: var(--color-border-tertiary); color: var(--color-text-tertiary); }
+  .cell.extra { background: transparent; border-color: var(--color-border-tertiary); opacity: 0.4; }
+  #keyboard { display: flex; flex-direction: column; gap: 6px; align-items: center; margin-top: 0.5rem; }
+  .kb-row { display: flex; gap: 4px; }
+  .kb-key { min-width: 28px; height: 42px; padding: 0 6px; border: 0.5px solid var(--color-border-secondary); border-radius: 4px; background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; text-transform: uppercase; user-select: none; }
+  .kb-key.wide { min-width: 48px; font-size: 11px; }
+  .kb-key.star { min-width: 36px; font-size: 16px; }
+  .kb-key.correct { background: #538d4e; border-color: #538d4e; color: #fff; }
+  .kb-key.present { background: #b59f3b; border-color: #b59f3b; color: #fff; }
+  .kb-key.absent { background: var(--color-background-tertiary); border-color: transparent; color: var(--color-text-tertiary); }
+  #msg { text-align: center; font-size: 13px; font-weight: 500; min-height: 22px; color: var(--color-text-primary); margin-bottom: 0.5rem; }
+  .legend { display: flex; gap: 12px; justify-content: center; font-size: 11px; color: var(--color-text-secondary); margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+  .legend-dot.g { background: #538d4e; }
+  .legend-dot.y { background: #b59f3b; }
+  .legend-dot.x { background: #787c7e; }
+  .legend-dot.s { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); }
+  #attempts { text-align: center; font-size: 11px; color: var(--color-text-secondary); margin-bottom: 0.75rem; }
+  #input-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 0.75rem; }
+  #guess-input { border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 6px 10px; font-size: 14px; background: var(--color-background-primary); color: var(--color-text-primary); width: 220px; }
+  #guess-input::placeholder { text-transform: none; color: var(--color-text-tertiary); }
+  #submit-btn { padding: 6px 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 13px; cursor: pointer; }
+  #autocomplete { position: relative; width: 220px; }
+  #ac-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); z-index: 10; max-height: 160px; overflow-y: auto; display: none; }
+  .ac-item { padding: 6px 10px; font-size: 13px; cursor: pointer; color: var(--color-text-primary); }
+  .ac-item:hover { background: var(--color-background-secondary); }
+  .star-hint { text-align: center; font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 0.75rem; }
+  #action-btns { display: flex; gap: 8px; justify-content: center; margin-top: 0.75rem; flex-wrap: wrap; }
+  .action-btn { padding: 6px 16px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 12px; cursor: pointer; }
+  .action-btn:disabled { opacity: 0.4; cursor: default; }
+  #hint-btn { border-color: #b59f3b; color: #b59f3b; }
+  #hint-btn:hover:not(:disabled) { background: rgba(181,159,59,0.1); }
+  #reveal-btn { border-color: #dc2626; color: var(--color-text-danger); }
+  #reveal-btn:hover:not(:disabled) { background: rgba(220,38,38,0.1); }
+  #new-game-btn { display: none; padding: 8px 20px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 13px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>💊 DRUGUESSR</h1>
+  <div class="subtitle">Guess the INN drug name · 8 attempts</div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot g"></div> Correct spot</div>
+    <div class="legend-item"><div class="legend-dot y"></div> Wrong spot</div>
+    <div class="legend-item"><div class="legend-dot x"></div> Not in word</div>
+    <div class="legend-item"><div class="legend-dot s"></div> Skipped (*)</div>
+  </div>
+  <div class="star-hint">Use * to skip positions — e.g. <strong>a**lo***ol</strong></div>
+  <div id="hint-bar"></div>
+  <div id="class-hint"></div>
+  <div id="grid"></div>
+  <div id="msg"></div>
+  <div id="attempts"></div>
+  <div id="input-row">
+    <div id="autocomplete">
+      <input id="guess-input" type="text" placeholder="e.g. metformin or a*****" autocomplete="off" />
+      <div id="ac-list"></div>
+    </div>
+    <button id="submit-btn">Enter</button>
+  </div>
+  <div id="keyboard"></div>
+  <div id="action-btns">
+    <button class="action-btn" id="hint-btn" onclick="showHint()">💡 Hint (drug class)</button>
+    <button class="action-btn" id="reveal-btn" onclick="revealAnswer()">🏳 Give answer</button>
+    <button id="new-game-btn" onclick="newGame()">New drug ↺</button>
+  </div>
+</div>
+<script>
+const DRUG_DATA = [
+  ["metformin","Biguanide (antidiabetic)"],
+  ["lisinopril","ACE inhibitor"],
+  ["atorvastatin","Statin (HMG-CoA reductase inhibitor)"],
+  ["amlodipine","Calcium channel blocker (dihydropyridine)"],
+  ["omeprazole","Proton pump inhibitor"],
+  ["metoprolol","Beta-1 selective blocker"],
+  ["simvastatin","Statin (HMG-CoA reductase inhibitor)"],
+  ["losartan","Angiotensin II receptor blocker (ARB)"],
+  ["albuterol","Short-acting beta-2 agonist (SABA)"],
+  ["gabapentin","Alpha-2-delta ligand / anticonvulsant"],
+  ["hydrochlorothiazide","Thiazide diuretic"],
+  ["sertraline","Selective serotonin reuptake inhibitor (SSRI)"],
+  ["escitalopram","Selective serotonin reuptake inhibitor (SSRI)"],
+  ["furosemide","Loop diuretic"],
+  ["acetaminophen","Analgesic / antipyretic"],
+  ["ibuprofen","Non-steroidal anti-inflammatory drug (NSAID)"],
+  ["amoxicillin","Aminopenicillin antibiotic"],
+  ["azithromycin","Macrolide antibiotic"],
+  ["ciprofloxacin","Fluoroquinolone antibiotic"],
+  ["doxycycline","Tetracycline antibiotic"],
+  ["cephalexin","First-generation cephalosporin"],
+  ["clindamycin","Lincosamide antibiotic"],
+  ["trimethoprim","Dihydrofolate reductase inhibitor antibiotic"],
+  ["metronidazole","Nitroimidazole antibiotic/antiprotozoal"],
+  ["fluconazole","Triazole antifungal"],
+  ["acyclovir","Nucleoside analogue antiviral"],
+  ["tamsulosin","Alpha-1A blocker"],
+  ["finasteride","5-alpha reductase inhibitor"],
+  ["sildenafil","PDE-5 inhibitor"],
+  ["tadalafil","PDE-5 inhibitor"],
+  ["levothyroxine","Thyroid hormone replacement"],
+  ["prednisone","Corticosteroid"],
+  ["prednisolone","Corticosteroid"],
+  ["hydrocortisone","Corticosteroid"],
+  ["dexamethasone","Corticosteroid"],
+  ["warfarin","Vitamin K antagonist (anticoagulant)"],
+  ["apixaban","Direct factor Xa inhibitor (DOAC)"],
+  ["rivaroxaban","Direct factor Xa inhibitor (DOAC)"],
+  ["clopidogrel","ADP receptor antagonist (antiplatelet)"],
+  ["aspirin","COX inhibitor / antiplatelet"],
+  ["digoxin","Cardiac glycoside"],
+  ["bisoprolol","Beta-1 selective blocker"],
+  ["carvedilol","Non-selective beta blocker with alpha blockade"],
+  ["diltiazem","Non-dihydropyridine calcium channel blocker"],
+  ["verapamil","Non-dihydropyridine calcium channel blocker"],
+  ["nifedipine","Calcium channel blocker (dihydropyridine)"],
+  ["ramipril","ACE inhibitor"],
+  ["enalapril","ACE inhibitor"],
+  ["perindopril","ACE inhibitor"],
+  ["irbesartan","Angiotensin II receptor blocker (ARB)"],
+  ["candesartan","Angiotensin II receptor blocker (ARB)"],
+  ["valsartan","Angiotensin II receptor blocker (ARB)"],
+  ["spironolactone","Potassium-sparing diuretic / aldosterone antagonist"],
+  ["eplerenone","Selective aldosterone antagonist"],
+  ["atenolol","Beta-1 selective blocker"],
+  ["propranolol","Non-selective beta blocker"],
+  ["labetalol","Alpha and non-selective beta blocker"],
+  ["hydralazine","Direct vasodilator"],
+  ["clonidine","Central alpha-2 agonist"],
+  ["felodipine","Calcium channel blocker (dihydropyridine)"],
+  ["pravastatin","Statin (HMG-CoA reductase inhibitor)"],
+  ["rosuvastatin","Statin (HMG-CoA reductase inhibitor)"],
+  ["fenofibrate","Fibrate (lipid-lowering)"],
+  ["gemfibrozil","Fibrate (lipid-lowering)"],
+  ["ezetimibe","Cholesterol absorption inhibitor"],
+  ["colchicine","Anti-gout agent / microtubule inhibitor"],
+  ["allopurinol","Xanthine oxidase inhibitor (anti-gout)"],
+  ["febuxostat","Xanthine oxidase inhibitor (anti-gout)"],
+  ["hydroxychloroquine","Antimalarial / DMARD"],
+  ["sulfasalazine","DMARD / aminosalicylate"],
+  ["methotrexate","Folate antagonist / DMARD"],
+  ["azathioprine","Thiopurine immunosuppressant"],
+  ["mycophenolate","Inosine monophosphate dehydrogenase inhibitor"],
+  ["tacrolimus","Calcineurin inhibitor (immunosuppressant)"],
+  ["ciclosporin","Calcineurin inhibitor (immunosuppressant)"],
+  ["leflunomide","DMARD / pyrimidine synthesis inhibitor"],
+  ["celecoxib","COX-2 selective NSAID"],
+  ["naproxen","Non-steroidal anti-inflammatory drug (NSAID)"],
+  ["diclofenac","Non-steroidal anti-inflammatory drug (NSAID)"],
+  ["meloxicam","Preferential COX-2 NSAID"],
+  ["indomethacin","Non-steroidal anti-inflammatory drug (NSAID)"],
+  ["ketorolac","Non-steroidal anti-inflammatory drug (NSAID)"],
+  ["morphine","Opioid analgesic (mu agonist)"],
+  ["oxycodone","Opioid analgesic (mu agonist)"],
+  ["tramadol","Weak opioid / SNRI analgesic"],
+  ["codeine","Prodrug opioid analgesic"],
+  ["buprenorphine","Partial opioid agonist"],
+  ["naloxone","Opioid antagonist"],
+  ["fentanyl","Potent opioid analgesic (mu agonist)"],
+  ["pregabalin","Alpha-2-delta ligand / anticonvulsant"],
+  ["carbamazepine","Sodium channel blocker / anticonvulsant"],
+  ["lamotrigine","Sodium channel blocker / anticonvulsant"],
+  ["levetiracetam","SV2A modulator / anticonvulsant"],
+  ["valproate","Multiple mechanism anticonvulsant / mood stabiliser"],
+  ["phenytoin","Sodium channel blocker / anticonvulsant"],
+  ["topiramate","Multiple mechanism anticonvulsant"],
+  ["clonazepam","Benzodiazepine anticonvulsant"],
+  ["lorazepam","Benzodiazepine anxiolytic/anticonvulsant"],
+  ["diazepam","Benzodiazepine anxiolytic/anticonvulsant"],
+  ["alprazolam","Benzodiazepine anxiolytic"],
+  ["zolpidem","Non-benzodiazepine hypnotic (Z-drug)"],
+  ["zopiclone","Non-benzodiazepine hypnotic (Z-drug)"],
+  ["melatonin","Melatonin receptor agonist / sleep aid"],
+  ["fluoxetine","Selective serotonin reuptake inhibitor (SSRI)"],
+  ["paroxetine","Selective serotonin reuptake inhibitor (SSRI)"],
+  ["venlafaxine","Serotonin-norepinephrine reuptake inhibitor (SNRI)"],
+  ["duloxetine","Serotonin-norepinephrine reuptake inhibitor (SNRI)"],
+  ["mirtazapine","NaSSA antidepressant"],
+  ["amitriptyline","Tricyclic antidepressant (TCA)"],
+  ["nortriptyline","Tricyclic antidepressant (TCA)"],
+  ["lithium","Mood stabiliser"],
+  ["quetiapine","Atypical antipsychotic"],
+  ["olanzapine","Atypical antipsychotic"],
+  ["risperidone","Atypical antipsychotic"],
+  ["aripiprazole","Atypical antipsychotic (partial D2 agonist)"],
+  ["haloperidol","Typical antipsychotic (butyrophenone)"],
+  ["clozapine","Atypical antipsychotic (clozapine class)"],
+  ["donepezil","Acetylcholinesterase inhibitor (dementia)"],
+  ["memantine","NMDA receptor antagonist (dementia)"],
+  ["rivastigmine","Acetylcholinesterase inhibitor (dementia)"],
+  ["methylphenidate","Stimulant / dopamine-norepinephrine reuptake inhibitor"],
+  ["atomoxetine","Selective norepinephrine reuptake inhibitor (ADHD)"],
+  ["lisdexamfetamine","Prodrug stimulant (ADHD)"],
+  ["modafinil","Wakefulness-promoting agent"],
+  ["ondansetron","5-HT3 antagonist (antiemetic)"],
+  ["metoclopramide","Dopamine antagonist / prokinetic antiemetic"],
+  ["domperidone","Peripheral dopamine antagonist / antiemetic"],
+  ["pantoprazole","Proton pump inhibitor"],
+  ["esomeprazole","Proton pump inhibitor"],
+  ["lansoprazole","Proton pump inhibitor"],
+  ["famotidine","H2 receptor antagonist"],
+  ["sucralfate","Mucosal protective agent"],
+  ["bisacodyl","Stimulant laxative"],
+  ["lactulose","Osmotic laxative"],
+  ["senna","Stimulant laxative"],
+  ["loperamide","Peripheral opioid agonist / antidiarrhoeal"],
+  ["mesalazine","Aminosalicylate (IBD)"],
+  ["budesonide","Corticosteroid (inhaled/topical/enteric)"],
+  ["beclomethasone","Inhaled corticosteroid"],
+  ["fluticasone","Inhaled corticosteroid"],
+  ["montelukast","Leukotriene receptor antagonist"],
+  ["ipratropium","Short-acting muscarinic antagonist (SAMA)"],
+  ["tiotropium","Long-acting muscarinic antagonist (LAMA)"],
+  ["salmeterol","Long-acting beta-2 agonist (LABA)"],
+  ["formoterol","Long-acting beta-2 agonist (LABA)"],
+  ["theophylline","Phosphodiesterase inhibitor / bronchodilator"],
+  ["salbutamol","Short-acting beta-2 agonist (SABA)"],
+  ["cetirizine","Second-generation H1 antihistamine"],
+  ["loratadine","Second-generation H1 antihistamine"],
+  ["fexofenadine","Second-generation H1 antihistamine"],
+  ["promethazine","First-generation H1 antihistamine / phenothiazine"],
+  ["chlorphenamine","First-generation H1 antihistamine"],
+  ["glibenclamide","Sulfonylurea (antidiabetic)"],
+  ["glipizide","Sulfonylurea (antidiabetic)"],
+  ["gliclazide","Sulfonylurea (antidiabetic)"],
+  ["sitagliptin","DPP-4 inhibitor (gliptin)"],
+  ["empagliflozin","SGLT-2 inhibitor"],
+  ["dapagliflozin","SGLT-2 inhibitor"],
+  ["pioglitazone","Thiazolidinedione / PPAR-gamma agonist"],
+  ["exenatide","GLP-1 receptor agonist"],
+  ["liraglutide","GLP-1 receptor agonist"],
+  ["dulaglutide","GLP-1 receptor agonist"],
+  ["semaglutide","GLP-1 receptor agonist"],
+  ["imatinib","BCR-ABL tyrosine kinase inhibitor"],
+  ["tamoxifen","Selective oestrogen receptor modulator (SERM)"],
+  ["letrozole","Aromatase inhibitor"],
+  ["anastrozole","Aromatase inhibitor"],
+  ["cyclophosphamide","Alkylating agent (cytotoxic)"],
+  ["carboplatin","Platinum-based alkylating agent"],
+  ["paclitaxel","Taxane (microtubule stabiliser)"],
+  ["docetaxel","Taxane (microtubule stabiliser)"],
+  ["fluorouracil","Pyrimidine antimetabolite"],
+  ["capecitabine","Oral prodrug fluoropyrimidine antimetabolite"],
+  ["gemcitabine","Pyrimidine antimetabolite"],
+  ["oxaliplatin","Platinum-based alkylating agent"],
+  ["vincristine","Vinca alkaloid (microtubule inhibitor)"],
+  ["doxorubicin","Anthracycline topoisomerase II inhibitor"],
+  ["bleomycin","Glycopeptide antitumour antibiotic"],
+  ["rituximab","Anti-CD20 monoclonal antibody"],
+  ["adalimumab","Anti-TNF monoclonal antibody"],
+  ["infliximab","Anti-TNF monoclonal antibody"],
+  ["etanercept","TNF receptor fusion protein"],
+  ["abatacept","T-cell co-stimulation inhibitor (CTLA-4-Ig)"],
+  ["tocilizumab","Anti-IL-6 receptor monoclonal antibody"],
+  ["ustekinumab","Anti-IL-12/23 monoclonal antibody"],
+  ["secukinumab","Anti-IL-17A monoclonal antibody"],
+  ["dupilumab","Anti-IL-4/13 receptor monoclonal antibody"],
+  ["benralizumab","Anti-IL-5 receptor monoclonal antibody"],
+  ["mepolizumab","Anti-IL-5 monoclonal antibody"],
+  ["acarbose","Alpha-glucosidase inhibitor"],
+  ["repaglinide","Meglitinide / rapid insulin secretagogue"],
+  ["nateglinide","Meglitinide / rapid insulin secretagogue"],
+  ["canagliflozin","SGLT-2 inhibitor"],
+  ["ertugliflozin","SGLT-2 inhibitor"],
+  ["alogliptin","DPP-4 inhibitor (gliptin)"],
+  ["saxagliptin","DPP-4 inhibitor (gliptin)"],
+  ["linagliptin","DPP-4 inhibitor (gliptin)"],
+  ["vildagliptin","DPP-4 inhibitor (gliptin)"],
+  ["alendronate","Bisphosphonate"],
+  ["risedronate","Bisphosphonate"],
+  ["ibandronate","Bisphosphonate"],
+  ["zoledronate","Bisphosphonate"],
+  ["denosumab","Anti-RANKL monoclonal antibody"],
+  ["teriparatide","Recombinant PTH analogue"],
+  ["raloxifene","Selective oestrogen receptor modulator (SERM)"],
+  ["heparin","Unfractionated heparin / anticoagulant"],
+  ["enoxaparin","Low molecular weight heparin (LMWH)"],
+  ["dalteparin","Low molecular weight heparin (LMWH)"],
+  ["fondaparinux","Indirect factor Xa inhibitor"],
+  ["dabigatran","Direct thrombin inhibitor (DOAC)"],
+  ["edoxaban","Direct factor Xa inhibitor (DOAC)"],
+  ["alteplase","Tissue plasminogen activator (thrombolytic)"],
+  ["tenecteplase","Tissue plasminogen activator (thrombolytic)"],
+  ["doxazosin","Alpha-1 blocker"],
+  ["prazosin","Alpha-1 blocker"],
+  ["terazosin","Alpha-1 blocker"],
+  ["alfuzosin","Selective alpha-1A blocker (BPH)"],
+  ["silodosin","Selective alpha-1A blocker (BPH)"],
+  ["oxybutynin","Antimuscarinic (overactive bladder)"],
+  ["tolterodine","Antimuscarinic (overactive bladder)"],
+  ["solifenacin","Antimuscarinic (overactive bladder)"],
+  ["mirabegron","Beta-3 adrenergic agonist (overactive bladder)"],
+  ["neostigmine","Acetylcholinesterase inhibitor"],
+  ["pyridostigmine","Acetylcholinesterase inhibitor"],
+  ["atropine","Muscarinic antagonist"],
+  ["hyoscine","Muscarinic antagonist / antispasmodic"],
+  ["glycopyrronium","Quaternary muscarinic antagonist"],
+  ["pilocarpine","Muscarinic agonist"],
+  ["timolol","Non-selective beta blocker (ophthalmic)"],
+  ["latanoprost","Prostaglandin F2-alpha analogue (glaucoma)"],
+  ["bimatoprost","Prostaglandin analogue (glaucoma)"],
+  ["brimonidine","Alpha-2 agonist (glaucoma)"],
+  ["dorzolamide","Carbonic anhydrase inhibitor (ophthalmic)"],
+  ["acetazolamide","Carbonic anhydrase inhibitor"],
+  ["mannitol","Osmotic diuretic"],
+  ["desmopressin","Vasopressin analogue / antidiuretic"],
+  ["oxytocin","Oxytocin receptor agonist (uterotonic)"],
+  ["misoprostol","Prostaglandin E1 analogue"],
+  ["progesterone","Progestogen"],
+  ["norethisterone","Synthetic progestogen"],
+  ["levonorgestrel","Synthetic progestogen"],
+  ["etonogestrel","Synthetic progestogen"],
+  ["medroxyprogesterone","Synthetic progestogen"],
+  ["ethinylestradiol","Synthetic oestrogen"],
+  ["estradiol","Oestrogen"],
+  ["tibolone","Synthetic steroid with oestrogenic/progestogenic/androgenic activity"],
+  ["clomifene","Selective oestrogen receptor modulator (SERM) / ovulation inducer"],
+  ["goserelin","GnRH agonist"],
+  ["leuprorelin","GnRH agonist"],
+  ["triptorelin","GnRH agonist"],
+  ["danazol","Androgen / anabolic steroid (endometriosis)"],
+  ["mifepristone","Progesterone receptor antagonist"],
+  ["testosterone","Androgen"],
+  ["ampicillin","Aminopenicillin antibiotic"],
+  ["piperacillin","Ureidopenicillin antibiotic"],
+  ["flucloxacillin","Penicillinase-resistant penicillin"],
+  ["cefazolin","First-generation cephalosporin"],
+  ["cefuroxime","Second-generation cephalosporin"],
+  ["cefotaxime","Third-generation cephalosporin"],
+  ["ceftriaxone","Third-generation cephalosporin"],
+  ["ceftazidime","Third-generation cephalosporin (anti-pseudomonal)"],
+  ["cefepime","Fourth-generation cephalosporin"],
+  ["imipenem","Carbapenem antibiotic"],
+  ["meropenem","Carbapenem antibiotic"],
+  ["ertapenem","Carbapenem antibiotic"],
+  ["vancomycin","Glycopeptide antibiotic"],
+  ["teicoplanin","Glycopeptide antibiotic"],
+  ["linezolid","Oxazolidinone antibiotic"],
+  ["daptomycin","Lipopeptide antibiotic"],
+  ["rifampicin","Rifamycin antibiotic / RNA polymerase inhibitor"],
+  ["isoniazid","Antitubercular (prodrug)"],
+  ["pyrazinamide","Antitubercular"],
+  ["ethambutol","Antitubercular / arabinosyl transferase inhibitor"],
+  ["streptomycin","Aminoglycoside antibiotic"],
+  ["bedaquiline","Antitubercular / ATP synthase inhibitor"],
+  ["delamanid","Antitubercular / nitroimidazole"],
+  ["clofazimine","Riminophenazine antibiotic (leprosy/TB)"],
+  ["atovaquone","Antiprotozoal / antimalarial"],
+  ["proguanil","Antimalarial (antifolate prodrug)"],
+  ["chloroquine","Antimalarial / aminoquinoline"],
+  ["mefloquine","Antimalarial / blood schizonticide"],
+  ["primaquine","Antimalarial / tissue schizonticide"],
+  ["artemether","Artemisinin antimalarial"],
+  ["lumefantrine","Antimalarial (used with artemether)"],
+  ["artesunate","Artemisinin antimalarial"],
+  ["quinine","Antimalarial / quinoline"],
+  ["amphotericin","Polyene antifungal"],
+  ["itraconazole","Triazole antifungal"],
+  ["voriconazole","Triazole antifungal"],
+  ["posaconazole","Triazole antifungal"],
+  ["micafungin","Echinocandin antifungal"],
+  ["caspofungin","Echinocandin antifungal"],
+  ["terbinafine","Allylamine antifungal"],
+  ["griseofulvin","Antifungal / microtubule inhibitor"],
+  ["nystatin","Polyene antifungal"],
+  ["clotrimazole","Imidazole antifungal"],
+  ["miconazole","Imidazole antifungal"],
+  ["ketoconazole","Imidazole antifungal"],
+  ["oseltamivir","Neuraminidase inhibitor (influenza)"],
+  ["zanamivir","Neuraminidase inhibitor (influenza)"],
+  ["valaciclovir","Prodrug of aciclovir (antiviral)"],
+  ["ganciclovir","Nucleoside analogue antiviral (CMV)"],
+  ["valganciclovir","Prodrug of ganciclovir (CMV)"],
+  ["sofosbuvir","NS5B polymerase inhibitor (HCV)"],
+  ["ledipasvir","NS5A inhibitor (HCV)"],
+  ["daclatasvir","NS5A inhibitor (HCV)"],
+  ["entecavir","Nucleoside analogue (HBV)"],
+  ["tenofovir","Nucleotide reverse transcriptase inhibitor"],
+  ["lamivudine","Nucleoside reverse transcriptase inhibitor (NRTI)"],
+  ["emtricitabine","Nucleoside reverse transcriptase inhibitor (NRTI)"],
+  ["efavirenz","Non-nucleoside reverse transcriptase inhibitor (NNRTI)"],
+  ["nevirapine","Non-nucleoside reverse transcriptase inhibitor (NNRTI)"],
+  ["lopinavir","HIV protease inhibitor"],
+  ["ritonavir","HIV protease inhibitor / pharmacokinetic booster"],
+  ["atazanavir","HIV protease inhibitor"],
+  ["darunavir","HIV protease inhibitor"],
+  ["raltegravir","HIV integrase strand transfer inhibitor"],
+  ["dolutegravir","HIV integrase strand transfer inhibitor"],
+  ["bictegravir","HIV integrase strand transfer inhibitor"],
+  ["abacavir","Nucleoside reverse transcriptase inhibitor (NRTI)"],
+  ["zidovudine","Nucleoside reverse transcriptase inhibitor (NRTI)"],
+  ["olopatadine","H1 antihistamine / mast cell stabiliser (ophthalmic)"],
+  ["ketotifen","H1 antihistamine / mast cell stabiliser"],
+  ["nedocromil","Mast cell stabiliser"],
+  ["lodoxamide","Mast cell stabiliser (ophthalmic)"],
+  ["azelastine","H1 antihistamine (ophthalmic/nasal)"],
+  ["epinastine","H1 antihistamine (ophthalmic)"],
+  ["alcaftadine","H1 antihistamine (ophthalmic)"],
+  ["bepotastine","H1 antihistamine (ophthalmic)"],
+  ["emedastine","H1 antihistamine (ophthalmic)"],
+  ["pemirolast","Mast cell stabiliser (ophthalmic)"],
+  ["fluorometholone","Corticosteroid (ophthalmic)"],
+  ["loteprednol","Corticosteroid (ophthalmic)"],
+  ["rimexolone","Corticosteroid (ophthalmic)"],
+  ["difluprednate","Corticosteroid (ophthalmic)"],
+  ["bromfenac","NSAID (ophthalmic)"],
+  ["nepafenac","Prodrug NSAID (ophthalmic)"],
+  ["cyclosporine","Calcineurin inhibitor (ophthalmic / dry eye)"],
+  ["lifitegrast","LFA-1 integrin antagonist (dry eye)"],
+  ["travoprost","Prostaglandin F2-alpha analogue (glaucoma)"],
+  ["tafluprost","Prostaglandin F2-alpha analogue (glaucoma)"],
+  ["betaxolol","Beta-1 selective blocker (ophthalmic)"],
+  ["levobunolol","Non-selective beta blocker (ophthalmic)"],
+  ["carteolol","Non-selective beta blocker (ophthalmic)"],
+  ["brinzolamide","Carbonic anhydrase inhibitor (ophthalmic)"],
+  ["apraclonidine","Alpha-2 agonist (ophthalmic)"],
+  ["tropicamide","Muscarinic antagonist (mydriatic)"],
+  ["cyclopentolate","Muscarinic antagonist (mydriatic)"],
+  ["ranibizumab","Anti-VEGF monoclonal antibody (ophthalmic)"],
+  ["bevacizumab","Anti-VEGF monoclonal antibody"],
+  ["aflibercept","Anti-VEGF fusion protein"],
+  ["brolucizumab","Anti-VEGF monoclonal antibody (ophthalmic)"],
+  ["faricimab","Anti-VEGF/Ang-2 bispecific antibody"],
+  ["tobramycin","Aminoglycoside antibiotic"],
+  ["gentamicin","Aminoglycoside antibiotic"],
+  ["amikacin","Aminoglycoside antibiotic"],
+  ["neomycin","Aminoglycoside antibiotic (topical)"],
+  ["fusidic acid","Fusidane antibiotic"],
+  ["mupirocin","Pseudomonic acid antibiotic (topical)"],
+  ["retapamulin","Pleuromutilin antibiotic (topical)"],
+  ["nitrofurantoin","Nitrofuran antibiotic (UTI)"],
+  ["fosfomycin","Phosphonic acid antibiotic (UTI)"],
+  ["tretinoin","Retinoic acid / vitamin A derivative"],
+  ["isotretinoin","Oral retinoid"],
+  ["acitretin","Systemic retinoid"],
+  ["adapalene","Third-generation retinoid (topical)"],
+  ["tazarotene","Topical retinoid"],
+  ["calcipotriol","Vitamin D3 analogue (psoriasis)"],
+  ["tacalcitol","Vitamin D3 analogue (psoriasis)"],
+  ["imiquimod","TLR7 agonist / immune modifier (topical)"],
+  ["tirbanibulin","Tubulin polymerisation inhibitor (topical)"],
+  ["hydroquinone","Tyrosinase inhibitor / skin lightening agent"],
+  ["tranexamic acid","Antifibrinolytic / plasmin inhibitor"],
+  ["ivermectin","Macrocyclic lactone antiparasitic"],
+  ["permethrin","Pyrethroid antiparasitic"],
+  ["malathion","Organophosphate antiparasitic"],
+  ["ciclopirox","Broad-spectrum antifungal (topical)"],
+  ["naftifine","Allylamine antifungal (topical)"],
+  ["butenafine","Benzylamine antifungal (topical)"],
+  ["tolnaftate","Antifungal (topical)"],
+  ["pimecrolimus","Calcineurin inhibitor (topical, dermatology)"],
+  ["crisaborole","PDE-4 inhibitor (topical, eczema)"],
+  ["tapinarof","Aryl hydrocarbon receptor agonist (topical)"],
+  ["roflumilast","PDE-4 inhibitor"],
+  ["omalizumab","Anti-IgE monoclonal antibody"],
+  ["tralokinumab","Anti-IL-13 monoclonal antibody"],
+  ["lebrikizumab","Anti-IL-13 monoclonal antibody"],
+  ["nemolizumab","Anti-IL-31 receptor monoclonal antibody"],
+  ["lidocaine","Amide local anaesthetic / class Ib antiarrhythmic"],
+  ["bupivacaine","Amide local anaesthetic"],
+  ["ropivacaine","Amide local anaesthetic"],
+  ["levobupivacaine","Amide local anaesthetic"],
+  ["mepivacaine","Amide local anaesthetic"],
+  ["prilocaine","Amide local anaesthetic"],
+  ["benzocaine","Ester local anaesthetic"],
+  ["tetracaine","Ester local anaesthetic"],
+  ["procaine","Ester local anaesthetic"],
+  ["ketamine","NMDA receptor antagonist / dissociative anaesthetic"],
+  ["propofol","GABA-A potentiator / intravenous anaesthetic"],
+  ["etomidate","GABA-A potentiator / intravenous anaesthetic"],
+  ["dexmedetomidine","Alpha-2 agonist / sedative"],
+  ["remifentanil","Ultra-short-acting opioid analgesic"],
+  ["sufentanil","Potent opioid analgesic"],
+  ["alfentanil","Short-acting opioid analgesic"],
+  ["suxamethonium","Depolarising neuromuscular blocking agent"],
+  ["rocuronium","Non-depolarising neuromuscular blocking agent"],
+  ["vecuronium","Non-depolarising neuromuscular blocking agent"],
+  ["pancuronium","Non-depolarising neuromuscular blocking agent"],
+  ["atracurium","Non-depolarising neuromuscular blocking agent"],
+  ["cisatracurium","Non-depolarising neuromuscular blocking agent"],
+  ["sugammadex","Selective relaxant binding agent (reversal)"],
+  ["sevoflurane","Halogenated inhalational anaesthetic"],
+  ["desflurane","Halogenated inhalational anaesthetic"],
+  ["isoflurane","Halogenated inhalational anaesthetic"],
+  ["nitrous oxide","Inhalational anaesthetic / analgesic"],
+  ["ephedrine","Indirect sympathomimetic"],
+  ["metaraminol","Alpha agonist vasopressor"],
+  ["dobutamine","Beta-1 adrenergic agonist (inotrope)"],
+  ["dopamine","Catecholamine vasopressor/inotrope"],
+  ["norepinephrine","Alpha/beta adrenergic agonist (vasopressor)"],
+  ["vasopressin","V1 receptor agonist (vasopressor)"],
+  ["milrinone","PDE-3 inhibitor (inotrope/vasodilator)"],
+  ["levosimendan","Calcium sensitiser / inotrope"],
+  ["torsemide","Loop diuretic"],
+  ["bumetanide","Loop diuretic"],
+  ["indapamide","Thiazide-like diuretic"],
+  ["chlorthalidone","Thiazide-like diuretic"],
+  ["amiloride","Potassium-sparing diuretic (ENaC blocker)"],
+  ["triamterene","Potassium-sparing diuretic (ENaC blocker)"],
+  ["levodopa","Dopamine precursor (Parkinson's)"],
+  ["carbidopa","DOPA decarboxylase inhibitor (Parkinson's adjunct)"],
+  ["entacapone","COMT inhibitor (Parkinson's adjunct)"],
+  ["tolcapone","COMT inhibitor (Parkinson's adjunct)"],
+  ["pramipexole","Dopamine D2/D3 agonist (Parkinson's)"],
+  ["ropinirole","Dopamine D2/D3 agonist (Parkinson's)"],
+  ["rotigotine","Dopamine agonist (transdermal, Parkinson's)"],
+  ["apomorphine","Dopamine agonist (Parkinson's rescue)"],
+  ["rasagiline","MAO-B inhibitor (Parkinson's)"],
+  ["selegiline","MAO-B inhibitor (Parkinson's)"],
+  ["amantadine","NMDA antagonist / antiviral (Parkinson's adjunct)"],
+  ["trihexyphenidyl","Muscarinic antagonist (Parkinson's)"],
+  ["riluzole","Glutamate release inhibitor (ALS)"],
+  ["edaravone","Free radical scavenger (ALS)"],
+  ["nusinersen","Antisense oligonucleotide (spinal muscular atrophy)"],
+  ["risdiplam","SMN2 splicing modifier (spinal muscular atrophy)"],
+  ["natalizumab","Anti-alpha-4 integrin monoclonal antibody (MS)"],
+  ["alemtuzumab","Anti-CD52 monoclonal antibody (MS)"],
+  ["ocrelizumab","Anti-CD20 monoclonal antibody (MS)"],
+  ["siponimod","S1P receptor modulator (MS)"],
+  ["ozanimod","S1P receptor modulator (MS/UC)"],
+  ["cladribine","Purine nucleoside analogue (MS)"],
+  ["fingolimod","S1P receptor modulator (MS)"],
+  ["teriflunomide","Dihydroorotate dehydrogenase inhibitor (MS)"],
+  ["sumatriptan","5-HT1B/1D agonist (triptan, migraine)"],
+  ["zolmitriptan","5-HT1B/1D agonist (triptan, migraine)"],
+  ["rizatriptan","5-HT1B/1D agonist (triptan, migraine)"],
+  ["naratriptan","5-HT1B/1D agonist (triptan, migraine)"],
+  ["eletriptan","5-HT1B/1D agonist (triptan, migraine)"],
+  ["frovatriptan","5-HT1B/1D agonist (triptan, migraine)"],
+  ["lasmiditan","5-HT1F agonist (migraine)"],
+  ["erenumab","Anti-CGRP receptor monoclonal antibody (migraine)"],
+  ["fremanezumab","Anti-CGRP monoclonal antibody (migraine)"],
+  ["galcanezumab","Anti-CGRP monoclonal antibody (migraine)"],
+  ["baclofen","GABA-B receptor agonist (muscle relaxant)"],
+  ["tizanidine","Central alpha-2 agonist (muscle relaxant)"],
+  ["dantrolene","Ryanodine receptor blocker (muscle relaxant)"],
+  ["cyclobenzaprine","Tricyclic muscle relaxant"],
+  ["methocarbamol","Central muscle relaxant"],
+  ["naltrexone","Opioid antagonist (dependence)"],
+  ["acamprosate","NMDA antagonist / GABA-A agonist (alcohol dependence)"],
+  ["disulfiram","Aldehyde dehydrogenase inhibitor (alcohol aversion)"],
+  ["varenicline","Partial nicotinic acetylcholine receptor agonist (smoking cessation)"],
+  ["methyldopa","Central alpha-2 agonist (antihypertensive)"],
+  ["minoxidil","Potassium channel opener / vasodilator"],
+  ["nitroprusside","Nitric oxide donor / vasodilator"],
+  ["clevidipine","Calcium channel blocker (IV, hypertensive emergency)"],
+  ["ramelteon","Melatonin receptor agonist (insomnia)"],
+  ["suvorexant","Orexin receptor antagonist (insomnia)"],
+  ["lemborexant","Orexin receptor antagonist (insomnia)"],
+  ["eszopiclone","Non-benzodiazepine hypnotic (Z-drug)"],
+  ["zaleplon","Non-benzodiazepine hypnotic (Z-drug)"],
+  ["triazolam","Benzodiazepine hypnotic"],
+  ["temazepam","Benzodiazepine hypnotic"],
+  ["nitrazepam","Benzodiazepine hypnotic"],
+  ["buspirone","5-HT1A partial agonist / anxiolytic"],
+  ["hydroxyzine","H1 antihistamine / anxiolytic"],
+  ["chlordiazepoxide","Benzodiazepine (alcohol withdrawal)"],
+  ["clobazam","Benzodiazepine anticonvulsant"],
+  ["oxcarbazepine","Sodium channel blocker / anticonvulsant"],
+  ["lurasidone","Atypical antipsychotic"],
+  ["asenapine","Atypical antipsychotic"],
+  ["cariprazine","Atypical antipsychotic (D3/D2 partial agonist)"],
+  ["brexpiprazole","Atypical antipsychotic (D2 partial agonist)"],
+  ["fludrocortisone","Mineralocorticoid"],
+  ["cortisone","Corticosteroid (prodrug of hydrocortisone)"],
+  ["methylprednisolone","Corticosteroid"],
+  ["liothyronine","Thyroid hormone (T3)"],
+  ["propylthiouracil","Antithyroid / thionamide"],
+  ["carbimazole","Antithyroid / thionamide (prodrug)"],
+  ["methimazole","Antithyroid / thionamide"],
+  ["octreotide","Somatostatin analogue"],
+  ["lanreotide","Somatostatin analogue"],
+  ["pasireotide","Somatostatin analogue (multi-receptor)"],
+  ["pegvisomant","GH receptor antagonist (acromegaly)"],
+  ["bromocriptine","Dopamine D2 agonist (ergot)"],
+  ["cabergoline","Dopamine D2 agonist (ergot)"],
+  ["cinacalcet","Calcimimetic / calcium-sensing receptor agonist"],
+  ["sevelamer","Phosphate binder"],
+  ["eltrombopag","Thrombopoietin receptor agonist"],
+  ["romiplostim","Thrombopoietin receptor agonist (Fc-peptide fusion)"],
+  ["avatrombopag","Thrombopoietin receptor agonist"],
+  ["hydroxycarbamide","Ribonucleotide reductase inhibitor / cytotoxic"],
+  ["anagrelide","Phosphodiesterase inhibitor (platelet-reducing)"],
+  ["ruxolitinib","JAK1/2 inhibitor"],
+  ["idelalisib","PI3K-delta inhibitor"],
+  ["ibrutinib","BTK inhibitor"],
+  ["acalabrutinib","BTK inhibitor"],
+  ["zanubrutinib","BTK inhibitor"],
+  ["venetoclax","BCL-2 inhibitor"],
+  ["glasdegib","Hedgehog pathway (Smoothened) inhibitor"],
+  ["gilteritinib","FLT3 inhibitor"],
+  ["midostaurin","FLT3 / multi-kinase inhibitor"],
+  ["enasidenib","IDH2 inhibitor"],
+  ["ivosidenib","IDH1 inhibitor"],
+  ["bortezomib","Proteasome inhibitor"],
+  ["carfilzomib","Proteasome inhibitor"],
+  ["ixazomib","Proteasome inhibitor (oral)"],
+  ["daratumumab","Anti-CD38 monoclonal antibody"],
+  ["isatuximab","Anti-CD38 monoclonal antibody"],
+  ["pomalidomide","Immunomodulatory drug (IMiD)"],
+  ["lenalidomide","Immunomodulatory drug (IMiD)"],
+  ["thalidomide","Immunomodulatory drug (IMiD)"],
+  ["nivolumab","Anti-PD-1 monoclonal antibody"],
+  ["pembrolizumab","Anti-PD-1 monoclonal antibody"],
+  ["atezolizumab","Anti-PD-L1 monoclonal antibody"],
+  ["durvalumab","Anti-PD-L1 monoclonal antibody"],
+  ["avelumab","Anti-PD-L1 monoclonal antibody"],
+  ["cemiplimab","Anti-PD-1 monoclonal antibody"],
+  ["ipilimumab","Anti-CTLA-4 monoclonal antibody"],
+  ["lapatinib","Dual EGFR/HER2 tyrosine kinase inhibitor"],
+  ["erlotinib","EGFR tyrosine kinase inhibitor"],
+  ["gefitinib","EGFR tyrosine kinase inhibitor"],
+  ["afatinib","Irreversible EGFR tyrosine kinase inhibitor"],
+  ["osimertinib","Third-generation EGFR tyrosine kinase inhibitor"],
+  ["alectinib","ALK tyrosine kinase inhibitor"],
+  ["crizotinib","ALK/MET/ROS1 tyrosine kinase inhibitor"],
+  ["ceritinib","ALK tyrosine kinase inhibitor"],
+  ["lorlatinib","Third-generation ALK tyrosine kinase inhibitor"],
+  ["brigatinib","ALK tyrosine kinase inhibitor"],
+  ["vemurafenib","BRAF V600E inhibitor"],
+  ["dabrafenib","BRAF V600E inhibitor"],
+  ["trametinib","MEK inhibitor"],
+  ["cobimetinib","MEK inhibitor"],
+  ["binimetinib","MEK inhibitor"],
+  ["selumetinib","MEK inhibitor"],
+  ["palbociclib","CDK4/6 inhibitor"],
+  ["ribociclib","CDK4/6 inhibitor"],
+  ["abemaciclib","CDK4/6 inhibitor"],
+  ["olaparib","PARP inhibitor"],
+  ["niraparib","PARP inhibitor"],
+  ["rucaparib","PARP inhibitor"],
+  ["talazoparib","PARP inhibitor"],
+  ["ramucirumab","Anti-VEGFR-2 monoclonal antibody"],
+  ["sunitinib","Multi-targeted tyrosine kinase inhibitor (anti-angiogenic)"],
+  ["sorafenib","Multi-targeted tyrosine kinase inhibitor (anti-angiogenic)"],
+  ["regorafenib","Multi-targeted tyrosine kinase inhibitor"],
+  ["cabozantinib","Multi-targeted tyrosine kinase inhibitor (MET/VEGFR2)"],
+  ["axitinib","VEGFR tyrosine kinase inhibitor"],
+  ["pazopanib","Multi-targeted tyrosine kinase inhibitor (anti-angiogenic)"],
+  ["lenvatinib","Multi-targeted tyrosine kinase inhibitor (anti-angiogenic)"],
+  ["everolimus","mTOR inhibitor"],
+  ["temsirolimus","mTOR inhibitor"],
+  ["sirolimus","mTOR inhibitor / immunosuppressant"],
+  ["guselkumab","Anti-IL-23 monoclonal antibody"],
+  ["risankizumab","Anti-IL-23 monoclonal antibody"],
+  ["tildrakizumab","Anti-IL-23 monoclonal antibody"],
+  ["ixekizumab","Anti-IL-17A monoclonal antibody"],
+  ["bimekizumab","Anti-IL-17A/F monoclonal antibody"],
+  ["baricitinib","JAK1/2 inhibitor"],
+  ["tofacitinib","JAK1/3 inhibitor"],
+  ["upadacitinib","JAK1-selective inhibitor"],
+  ["filgotinib","JAK1-selective inhibitor"],
+  ["canakinumab","Anti-IL-1 beta monoclonal antibody"],
+  ["anakinra","IL-1 receptor antagonist"],
+  ["sarilumab","Anti-IL-6 receptor monoclonal antibody"],
+  ["siltuximab","Anti-IL-6 monoclonal antibody"],
+  ["romosozumab","Anti-sclerostin monoclonal antibody"],
+  ["abaloparatide","PTHrP analogue (bone anabolic)"],
+  ["eculizumab","Anti-C5 monoclonal antibody (complement inhibitor)"],
+  ["ravulizumab","Anti-C5 monoclonal antibody (complement inhibitor)"],
+  ["avacopan","C5a receptor antagonist"],
+  ["luspatercept","Activin receptor ligand trap (erythropoiesis)"],
+  ["sotatercept","Activin receptor ligand trap (PAH)"],
+  ["ketoprofen","Non-steroidal anti-inflammatory drug (NSAID)"],
+  ["piroxicam","NSAID (oxicam)"],
+  ["tenoxicam","NSAID (oxicam)"],
+  ["etodolac","NSAID"],
+  ["mefenamic acid","NSAID (anthranilic acid derivative)"],
+  ["nimesulide","Preferential COX-2 NSAID / sulfonanilide"],
+  ["etoricoxib","COX-2 selective NSAID"],
+  ["parecoxib","Prodrug COX-2 selective NSAID"],
+  ["colestipol","Bile acid sequestrant"],
+  ["colesevelam","Bile acid sequestrant"],
+  ["evolocumab","Anti-PCSK9 monoclonal antibody"],
+  ["alirocumab","Anti-PCSK9 monoclonal antibody"],
+  ["inclisiran","PCSK9 siRNA (lipid-lowering)"],
+  ["bempedoic acid","ATP-citrate lyase inhibitor (lipid-lowering)"],
+  ["sacubitril","Neprilysin inhibitor (used with valsartan in HFrEF)"],
+  ["ivabradine","HCN channel blocker (If current inhibitor)"],
+  ["ranolazine","Late sodium current inhibitor (anti-anginal)"],
+  ["nicorandil","Potassium channel opener / nitrate (anti-anginal)"],
+  ["isosorbide mononitrate","Organic nitrate (anti-anginal)"],
+  ["isosorbide dinitrate","Organic nitrate (anti-anginal)"],
+  ["glyceryl trinitrate","Organic nitrate (anti-anginal)"],
+  ["adenosine","Endogenous nucleoside / antiarrhythmic (SVT)"],
+  ["amiodarone","Class III antiarrhythmic (multiple channel blocker)"],
+  ["dronedarone","Class III antiarrhythmic (multichannel blocker)"],
+  ["flecainide","Class Ic antiarrhythmic"],
+  ["propafenone","Class Ic antiarrhythmic"],
+  ["mexiletine","Class Ib antiarrhythmic"],
+  ["disopyramide","Class Ia antiarrhythmic"],
+  ["sotalol","Class III antiarrhythmic / non-selective beta blocker"],
+  ["cefadroxil","First-generation cephalosporin"],
+  ["cefalexin","First-generation cephalosporin"],
+  ["cefaclor","Second-generation cephalosporin"],
+  ["cefprozil","Second-generation cephalosporin"],
+  ["cefdinir","Third-generation cephalosporin"],
+  ["cefixime","Third-generation cephalosporin"],
+  ["cefpodoxime","Third-generation cephalosporin"],
+  ["ceftibuten","Third-generation cephalosporin"],
+  ["ceftaroline","Fifth-generation cephalosporin (MRSA-active)"],
+  ["dalbavancin","Long-acting lipoglycopeptide antibiotic"],
+  ["oritavancin","Long-acting lipoglycopeptide antibiotic"],
+  ["tedizolid","Oxazolidinone antibiotic"],
+  ["omadacycline","Aminomethylcycline tetracycline antibiotic"],
+  ["delafloxacin","Fluoroquinolone antibiotic"],
+  ["fidaxomicin","Macrocyclic antibiotic (C. difficile)"],
+  ["rifaximin","Rifamycin antibiotic (non-absorbable)"],
+  ["clarithromycin","Macrolide antibiotic"],
+  ["roxithromycin","Macrolide antibiotic"],
+  ["telithromycin","Ketolide antibiotic"],
+  ["spiramycin","Macrolide antibiotic"],
+  ["tetracycline","Tetracycline antibiotic"],
+  ["oxytetracycline","Tetracycline antibiotic"],
+  ["minocycline","Tetracycline antibiotic"],
+  ["tigecycline","Glycylcycline antibiotic"],
+  ["sarecycline","Narrow-spectrum tetracycline antibiotic"],
+  ["levofloxacin","Fluoroquinolone antibiotic"],
+  ["moxifloxacin","Fluoroquinolone antibiotic"],
+  ["ofloxacin","Fluoroquinolone antibiotic"],
+  ["norfloxacin","Fluoroquinolone antibiotic"],
+  ["gemifloxacin","Fluoroquinolone antibiotic"],
+  ["sulfamethoxazole","Sulfonamide antibiotic"],
+  ["sulfadiazine","Sulfonamide antibiotic"],
+  ["dapsone","Sulfone antibiotic / antiprotozoal"],
+  ["colistin","Polymyxin antibiotic"],
+  ["maraviroc","CCR5 receptor antagonist (entry inhibitor, HIV)"],
+  ["enfuvirtide","HIV fusion inhibitor"],
+  ["lenacapavir","HIV capsid inhibitor"],
+  ["cabotegravir","HIV integrase strand transfer inhibitor (long-acting)"],
+  ["rilpivirine","Non-nucleoside reverse transcriptase inhibitor (NNRTI)"],
+  ["doravirine","Non-nucleoside reverse transcriptase inhibitor (NNRTI)"],
+  ["baloxavir","Cap-dependent endonuclease inhibitor (influenza)"],
+  ["peramivir","Neuraminidase inhibitor (influenza, IV)"],
+  ["favipiravir","RNA-dependent RNA polymerase inhibitor (antiviral)"],
+  ["molnupiravir","RNA-dependent RNA polymerase inhibitor (COVID-19)"],
+  ["nirmatrelvir","3CL protease inhibitor (COVID-19)"],
+  ["remdesivir","RNA-dependent RNA polymerase inhibitor (COVID-19)"],
+  ["praziquantel","Anthelmintic (trematodes/cestodes)"],
+  ["albendazole","Benzimidazole anthelmintic"],
+  ["mebendazole","Benzimidazole anthelmintic"],
+  ["diethylcarbamazine","Antifilarial drug"],
+  ["niclosamide","Anthelmintic (tapeworms)"],
+  ["pyrantel","Nicotinic agonist anthelmintic"],
+  ["levamisole","Nicotinic agonist / immunomodulator"],
+  ["acetylcysteine","Mucolytic / antidote (paracetamol overdose)"],
+  ["fomepizole","Alcohol dehydrogenase inhibitor (methanol/ethylene glycol antidote)"],
+  ["dimercaprol","Chelating agent (heavy metal poisoning)"],
+  ["penicillamine","Chelating agent / DMARD"],
+  ["desferrioxamine","Iron chelator"],
+  ["deferasirox","Oral iron chelator"],
+  ["deferiprone","Oral iron chelator"],
+  ["flumazenil","Benzodiazepine receptor antagonist"],
+  ["methylnaltrexone","Peripheral opioid antagonist (opioid-induced constipation)"],
+  ["naloxegol","Peripheral opioid antagonist (opioid-induced constipation)"],
+  ["granisetron","5-HT3 antagonist (antiemetic)"],
+  ["palonosetron","Second-generation 5-HT3 antagonist (antiemetic)"],
+  ["netupitant","NK1 receptor antagonist (antiemetic)"],
+  ["rolapitant","NK1 receptor antagonist (antiemetic)"],
+  ["aprepitant","NK1 receptor antagonist (antiemetic)"],
+  ["prochlorperazine","Dopamine D2 antagonist / antiemetic"],
+  ["droperidol","Butyrophenone antiemetic"],
+  ["cyclizine","H1 antihistamine / antiemetic"],
+  ["dimenhydrinate","H1 antihistamine / antiemetic"],
+  ["scopolamine","Muscarinic antagonist / antiemetic"],
+  ["rabeprazole","Proton pump inhibitor"],
+  ["dexlansoprazole","Proton pump inhibitor (dual delayed release)"],
+  ["vedolizumab","Anti-alpha-4-beta-7 integrin monoclonal antibody (IBD)"],
+  ["certolizumab pegol","PEGylated anti-TNF Fab fragment"],
+  ["golimumab","Anti-TNF monoclonal antibody"],
+  ["mirikizumab","Anti-IL-23 monoclonal antibody (IBD)"],
+  ["balsalazide","Prodrug aminosalicylate (IBD)"],
+  ["olsalazine","Aminosalicylate (IBD)"],
+  ["orlistat","Pancreatic lipase inhibitor"],
+  ["tirzepatide","Dual GIP/GLP-1 receptor agonist"],
+  ["polyethylene glycol","Osmotic laxative"],
+  ["eluxadoline","Mu/kappa opioid agonist / delta antagonist (IBS-D)"],
+  ["ursodeoxycholic acid","Bile acid / hepatoprotective agent"],
+  ["obeticholic acid","Farnesoid X receptor agonist"],
+  ["chenodeoxycholic acid","Primary bile acid / bile acid replacement"],
+  ["glecaprevir","NS3/4A protease inhibitor (HCV)"],
+  ["pibrentasvir","NS5A inhibitor (HCV)"],
+  ["elbasvir","NS5A inhibitor (HCV)"],
+  ["grazoprevir","NS3/4A protease inhibitor (HCV)"],
+  ["velpatasvir","NS5A inhibitor (HCV)"],
+  ["voxilaprevir","NS3/4A protease inhibitor (HCV)"],
+  ["adefovir","Nucleotide analogue (HBV)"],
+  ["telbivudine","Nucleoside analogue (HBV)"],
+  ["tenofovir alafenamide","Nucleotide reverse transcriptase inhibitor (prodrug)"],
+  ["capsaicin","TRPV1 agonist / topical analgesic"],
+  ["doxepin","Tricyclic antidepressant / H1 antihistamine (topical)"],
+  ["fostemsavir","HIV attachment inhibitor"],
+  ["ibalizumab","Anti-CD4 monoclonal antibody (HIV entry inhibitor)"],
+  ["momelotinib","JAK1/2 and ACVR1 inhibitor (myelofibrosis)"],
+  ["carbachol","Non-selective cholinergic agonist"],
+  ["diquafosol","P2Y2 receptor agonist (dry eye)"],
+];
+
+const DRUG_MAP = {};
+for (const [name, cls] of DRUG_DATA) DRUG_MAP[name.toLowerCase().trim()] = cls;
+const DRUGS = Object.keys(DRUG_MAP);
+
+const COLS = 14;
+const MAX_GUESSES = 8;
+let target = "", guesses = [], currentGuess = "", gameOver = false, hintUsed = false;
+
+function newGame() {
+  target = DRUGS[Math.floor(Math.random() * DRUGS.length)];
+  guesses = []; currentGuess = ""; gameOver = false; hintUsed = false;
+  document.getElementById("msg").textContent = "";
+  document.getElementById("msg").style.color = "var(--color-text-primary)";
+  document.getElementById("new-game-btn").style.display = "none";
+  document.getElementById("guess-input").value = "";
+  document.getElementById("guess-input").disabled = false;
+  document.getElementById("submit-btn").disabled = false;
+  document.getElementById("hint-btn").disabled = false;
+  document.getElementById("reveal-btn").disabled = false;
+  document.getElementById("hint-bar").textContent = "Drug name has " + target.length + " letter" + (target.length > 1 ? "s" : "");
+  document.getElementById("class-hint").style.display = "none";
+  document.getElementById("class-hint").textContent = "";
+  document.getElementById("attempts").textContent = "Guesses: 0 / " + MAX_GUESSES;
+  renderGrid(); renderKeyboard();
+  document.getElementById("guess-input").focus();
+}
+
+function showHint() {
+  if (gameOver) return;
+  const cls = DRUG_MAP[target];
+  const el = document.getElementById("class-hint");
+  el.textContent = "💡 Drug class: " + cls;
+  el.style.display = "block";
+  document.getElementById("hint-btn").disabled = true;
+  hintUsed = true;
+}
+
+function revealAnswer() {
+  if (gameOver) return;
+  document.getElementById("msg").textContent = "🏳 The answer was: " + target.toUpperCase();
+  document.getElementById("msg").style.color = "var(--color-text-secondary)";
+  endGame();
+}
+
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  for (let r = 0; r < MAX_GUESSES; r++) {
+    const row = document.createElement("div"); row.className = "row";
+    const guess = guesses[r];
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement("div");
+      if (guess) {
+        if (c < guess.display.length) {
+          const ch = guess.display[c];
+          cell.className = ch === '*' ? "cell skip" : "cell " + guess.result[c];
+          cell.textContent = ch === '*' ? "*" : ch.toUpperCase();
+        } else { cell.className = "cell extra"; }
+      } else if (r === guesses.length) {
+        cell.className = "cell";
+        const ch = currentGuess[c] || "";
+        cell.textContent = ch === '*' ? '*' : ch.toUpperCase();
+        if (ch) cell.style.borderColor = "var(--color-border-primary)";
+      } else { cell.className = "cell extra"; }
+      row.appendChild(cell);
+    }
+    grid.appendChild(row);
+  }
+}
+
+function score(pattern, target) {
+  const res = Array(pattern.length).fill("absent");
+  const tArr = target.split("");
+  const pArr = pattern.split("");
+  const used = Array(target.length).fill(false);
+  for (let i = 0; i < pArr.length; i++) {
+    if (pArr[i] === '*') { res[i] = "skip"; continue; }
+    if (i < tArr.length && pArr[i] === tArr[i]) { res[i] = "correct"; used[i] = true; pArr[i] = null; }
+  }
+  for (let i = 0; i < pArr.length; i++) {
+    if (!pArr[i] || res[i] === "skip") continue;
+    for (let j = 0; j < tArr.length; j++) {
+      if (!used[j] && pArr[i] === tArr[j]) { res[i] = "present"; used[j] = true; break; }
+    }
+  }
+  return res;
+}
+
+function renderKeyboard() {
+  const kb = document.getElementById("keyboard");
+  kb.innerHTML = "";
+  const rows = [["q","w","e","r","t","y","u","i","o","p"],["a","s","d","f","g","h","j","k","l"],["ENTER","z","x","c","v","b","n","m","⌫"],["*"]];
+  const letterState = {};
+  for (const g of guesses) {
+    for (let i = 0; i < g.display.length; i++) {
+      const l = g.display[i]; if (l === '*') continue;
+      const s = g.result[i];
+      if (!letterState[l] || letterState[l] === "absent" || (letterState[l] === "present" && s === "correct")) letterState[l] = s;
+    }
+  }
+  for (const row of rows) {
+    const div = document.createElement("div"); div.className = "kb-row";
+    for (const k of row) {
+      const btn = document.createElement("button"); btn.className = "kb-key";
+      if (k === "ENTER" || k === "⌫") btn.classList.add("wide");
+      if (k === "*") btn.classList.add("star");
+      btn.textContent = k;
+      if (letterState[k.toLowerCase()]) btn.classList.add(letterState[k.toLowerCase()]);
+      btn.addEventListener("mousedown", e => { e.preventDefault(); handleVirtualKey(k); });
+      div.appendChild(btn);
+    }
+    kb.appendChild(div);
+  }
+}
+
+function handleVirtualKey(k) {
+  if (gameOver) return;
+  if (k === "⌫") { currentGuess = currentGuess.slice(0, -1); syncInput(); renderGrid(); }
+  else if (k === "ENTER") { submitGuess(); }
+  else if (k === "*" && currentGuess.length < COLS) { currentGuess += "*"; syncInput(); renderGrid(); }
+  else if (/^[a-z]$/.test(k) && currentGuess.length < COLS) { currentGuess += k; syncInput(); renderGrid(); }
+}
+
+function syncInput() { document.getElementById("guess-input").value = currentGuess; }
+
+function submitGuess() {
+  const raw = currentGuess.trim().toLowerCase();
+  if (!raw) { flash("Type a drug name or pattern!"); return; }
+  const hasStar = raw.includes('*');
+  if (hasStar) {
+    if (raw.length !== target.length) { flash("Pattern must be " + target.length + " characters (use * for unknowns)"); return; }
+    const res = score(raw, target);
+    guesses.push({ display: raw, result: res });
+    currentGuess = ""; syncInput();
+    document.getElementById("attempts").textContent = "Guesses: " + guesses.length + " / " + MAX_GUESSES;
+    renderGrid(); renderKeyboard();
+    const won = raw.split("").every((ch, i) => ch === "*" || ch === target[i]);
+    if (won) showWin();
+    else if (guesses.length >= MAX_GUESSES) showLoss();
+    else document.getElementById("msg").textContent = "";
+  } else {
+    if (!DRUGS.includes(raw)) { flash("Not in drug list — check spelling"); return; }
+    const res = score(raw, target);
+    guesses.push({ display: raw, result: res });
+    currentGuess = ""; syncInput();
+    document.getElementById("attempts").textContent = "Guesses: " + guesses.length + " / " + MAX_GUESSES;
+    renderGrid(); renderKeyboard();
+    if (raw === target) showWin();
+    else if (guesses.length >= MAX_GUESSES) showLoss();
+    else document.getElementById("msg").textContent = "";
+  }
+  hideAC();
+}
+
+function showWin() {
+  document.getElementById("msg").textContent = "✓ Correct! " + target.toUpperCase() + " in " + guesses.length + " guess" + (guesses.length > 1 ? "es" : "");
+  document.getElementById("msg").style.color = "#538d4e";
+  endGame();
+}
+function showLoss() {
+  document.getElementById("msg").textContent = "✗ The answer was: " + target.toUpperCase();
+  document.getElementById("msg").style.color = "var(--color-text-danger)";
+  endGame();
+}
+function endGame() {
+  document.getElementById("new-game-btn").style.display = "inline-block";
+  document.getElementById("guess-input").disabled = true;
+  document.getElementById("submit-btn").disabled = true;
+  document.getElementById("hint-btn").disabled = true;
+  document.getElementById("reveal-btn").disabled = true;
+  gameOver = true;
+  const cls = DRUG_MAP[target];
+  if (cls) {
+    const el = document.getElementById("class-hint");
+    el.textContent = "💡 Drug class: " + cls;
+    el.style.display = "block";
+  }
+}
+function flash(msg) {
+  document.getElementById("msg").textContent = msg;
+  document.getElementById("msg").style.color = "var(--color-text-secondary)";
+  setTimeout(() => { if (!gameOver) document.getElementById("msg").textContent = ""; }, 1800);
+}
+
+const input = document.getElementById("guess-input");
+const acList = document.getElementById("ac-list");
+
+input.addEventListener("input", e => {
+  if (gameOver) return;
+  const cleaned = e.target.value.toLowerCase().replace(/[^a-z\* \-]/g, "");
+  currentGuess = cleaned; e.target.value = cleaned;
+  renderGrid();
+  if (!cleaned.includes('*')) showAC(cleaned); else hideAC();
+});
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); submitGuess(); }
+  else if (e.key === "Escape") hideAC();
+});
+document.getElementById("submit-btn").addEventListener("click", submitGuess);
+
+function showAC(val) {
+  if (val.length < 2 || val.includes('*')) { hideAC(); return; }
+  const matches = DRUGS.filter(d => d.startsWith(val)).slice(0, 8);
+  if (!matches.length) { hideAC(); return; }
+  acList.innerHTML = ""; acList.style.display = "block";
+  for (const m of matches) {
+    const item = document.createElement("div"); item.className = "ac-item"; item.textContent = m.toUpperCase();
+    item.addEventListener("mousedown", e => { e.preventDefault(); currentGuess = m; input.value = m; hideAC(); renderGrid(); input.focus(); });
+    acList.appendChild(item);
+  }
+}
+function hideAC() { acList.style.display = "none"; }
+document.addEventListener("click", e => { if (!e.target.closest("#autocomplete")) hideAC(); });
+
+newGame();
+</script>
+</body>
+</html>
