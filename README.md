@@ -1,6 +1,6 @@
 # DrugGuessr
 
-DrugGuessr is a simple drug-name guessing game inspired by word-guessing games, made for pharmacy revision and casual practice.
+DrugGuessr is a simple drug-name guessing game inspired by word-guessing games, made for pharmacy revision and casual practice. There is unlimited rounds that you can play, perfect for revision.
 
 Players guess the hidden generic drug name within a limited number of attempts. After each guess, the game gives feedback to help narrow down the answer.
 
