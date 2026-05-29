@@ -26,7 +26,7 @@ Players guess the hidden generic drug name within a limited number of attempts. 
 
 ## Purpose
 
-This project was created as a fun revision tool for pharmacy students. It helps reinforce familiarity with drug names, drug classes, indications, and common counselling points.
+This project was created as a fun revision tool for pharmacy students. It helps reinforce familiarity with drug names and drug classes
 
 ## Technologies Used
 
