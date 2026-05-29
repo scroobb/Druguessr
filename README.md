@@ -27,20 +27,3 @@ Players guess the hidden generic drug name within a limited number of attempts. 
 ## Purpose
 
 This project was created as a fun revision tool for pharmacy students. It helps reinforce familiarity with drug names and drug classes
-
-## Technologies Used
-
-- HTML
-- CSS
-- JavaScript
-
-## Getting Started
-
-### If using a simple HTML version
-
-Open the `index.html` file directly in your browser.
-
-Install dependencies:
-
-```bash
-npm install
