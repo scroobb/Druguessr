@@ -8,13 +8,9 @@ Players guess the hidden generic drug name within a limited number of attempts. 
 
 - Guess the hidden generic drug name
 - Letter-based feedback after each guess
-- Pharmacy-related clues such as:
+- Clues such as:
   - Drug class
-  - Main indication
-  - Route of administration
-  - Drug stem or naming clue
-  - Clinical counselling point
-- Designed for pharmacy students and anyone revising common medicines
+- Designed mainly for pharmacy students and anyone revising common medicines
 - Simple browser-based gameplay
 
 ## How to Play
@@ -26,7 +22,7 @@ Players guess the hidden generic drug name within a limited number of attempts. 
    - Yellow: correct letter in the wrong position
    - Grey: letter is not in the answer
 4. Use the unlocked clues to help identify the drug.
-5. Try to guess the drug before you run out of attempts.
+5. Try to guess the drug before you run out of attempts (8).
 
 ## Purpose
 
@@ -38,20 +34,11 @@ This project was created as a fun revision tool for pharmacy students. It helps 
 - CSS
 - JavaScript
 
-or, if your version is React-based:
-
-- React
-- Vite
-- JavaScript
-- CSS
-
 ## Getting Started
 
 ### If using a simple HTML version
 
 Open the `index.html` file directly in your browser.
-
-### If using a React/Vite version
 
 Install dependencies:
 
